@@ -14,7 +14,17 @@ $(document).ready(function () {
         } else {
             authenticate(code);
         }
-    })
+    });
+
+    $('#connectRtm').click(function () {
+        var code = getCodeFromUrl();
+
+        if (code.length === 0) {
+            $('#errorMessage').css('display', 'block');
+        } else {
+            connectRealTime(code);
+        }
+    });
 });
 
 function getCodeFromUrl() {
@@ -36,18 +46,10 @@ function authenticate(code) {
         sendMessage(webhook.url);
         return;
     }
-
-    var client_id = "TO_BE_OVERRIDEN";
-    var client_secret = "TO_BE_OVERRIDEN";
-    var redirect_uri = "TO_BE_OVERRIDEN";
-
-    var url = 'https://slack.com/api/oauth.access?' +
-        '&client_id=' + client_id + '&client_secret=' + client_secret + '&code=' + code + '&redirect_uri=' + redirect_uri;
-
     $.ajax({
         url: "/authenticate",
         type: 'POST',
-        data: JSON.stringify(url),
+        data: JSON.stringify(code),
         contentType: 'application/json',
         dataType: 'json'
     }).done(function (webhookCreated) {
@@ -75,7 +77,7 @@ function sendMessage(webHookUrl) {
 
     $.ajax({
         url: '/sendMessage',
-        method:'POST',
+        method: 'POST',
         data: JSON.stringify(data),
         contentType: 'application/json'
     }).done(function (data, textStatus, xhr) {
@@ -83,4 +85,18 @@ function sendMessage(webHookUrl) {
             console.log("Message send successfully");
         }
     })
+}
+
+function connectRealTime(code) {
+    $.ajax({
+        method: 'POST',
+        url: '/connectRealTime',
+        data: JSON.stringify(code),
+        contentType: 'application/json'
+    }).done(function (message, textStatus, xhr) {
+        if (xhr.status === 200) {
+            console.log("Connection real time established");
+            console.log(message)
+        }
+    });
 }
