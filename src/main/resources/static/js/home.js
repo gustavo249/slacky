@@ -14,3 +14,21 @@ $(document).ready(function () {
 function redirectTo(htmlLocalFile) {
     window.location.href = htmlLocalFile;
 }
+
+function getCodeFromUrl() {
+    var url = window.location.href;
+    var startIndexReper = "code=";
+    var start = url.indexOf(startIndexReper);
+    var end = url.indexOf("&");
+    var code = "";
+
+    if (start >= 0 && end >= 0) {
+        code = url.substring(start + startIndexReper.length, end);
+    }
+    return code;
+}
+
+function getRedirectUri() {
+    var url = window.location.href;
+    return url.substring(0, url.indexOf('?'));
+}

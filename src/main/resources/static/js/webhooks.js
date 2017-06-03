@@ -18,36 +18,10 @@ $(document).ready(function () {
             getWebhook(code, redirectUri);
         }
     });
-
-    $('#connectRtm').click(function () {
-        var code = getCodeFromUrl();
-
-        if (code.length === 0) {
-            $('#errorMessage').css('display', 'block');
-        } else {
-            connectRealTime(code);
-        }
-    });
 });
 
 
-function getCodeFromUrl() {
-    var url = window.location.href;
-    var startIndexReper = "code=";
-    var start = url.indexOf(startIndexReper);
-    var end = url.indexOf("&");
-    var code = "";
 
-    if (start >= 0 && end >= 0) {
-        code = url.substring(start + startIndexReper.length, end);
-    }
-    return code;
-}
-
-function getRedirectUri() {
-    var url = window.location.href;
-    return url.substring(0, url.indexOf('?'));
-}
 
 function getWebhook(code, redirectUri) {
 
