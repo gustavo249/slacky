@@ -6,13 +6,16 @@ var authenticated = false;
 var webhook;
 
 $(document).ready(function () {
+    $('.dropdown-toggle').dropdown();
+
     $('#sendBtn').click(function () {
         var code = getCodeFromUrl();
+        var redirectUri = getRedirectUri();
 
         if (code.length === 0) {
             $('#errorMessage').css('display', 'block');
         } else {
-            authenticate(code);
+            getWebhook(code, redirectUri);
         }
     });
 
@@ -27,6 +30,7 @@ $(document).ready(function () {
     });
 });
 
+
 function getCodeFromUrl() {
     var url = window.location.href;
     var startIndexReper = "code=";
@@ -40,16 +44,25 @@ function getCodeFromUrl() {
     return code;
 }
 
-function authenticate(code) {
+function getRedirectUri() {
+    var url = window.location.href;
+    return url.substring(0, url.indexOf('?'));
+}
+
+function getWebhook(code, redirectUri) {
 
     if (authenticated === true) {
         sendMessage(webhook.url);
         return;
     }
+    var requestInfo = {};
+    requestInfo.code = code;
+    requestInfo.redirectUri = redirectUri;
+
     $.ajax({
-        url: "/authenticate",
+        url: "/getWebhook/",
         type: 'POST',
-        data: JSON.stringify(code),
+        data: JSON.stringify(requestInfo),
         contentType: 'application/json',
         dataType: 'json'
     }).done(function (webhookCreated) {
@@ -87,16 +100,3 @@ function sendMessage(webHookUrl) {
     })
 }
 
-function connectRealTime(code) {
-    $.ajax({
-        method: 'POST',
-        url: '/connectRealTime',
-        data: JSON.stringify(code),
-        contentType: 'application/json'
-    }).done(function (message, textStatus, xhr) {
-        if (xhr.status === 200) {
-            console.log("Connection real time established");
-            console.log(message)
-        }
-    });
-}

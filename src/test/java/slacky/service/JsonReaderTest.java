@@ -23,16 +23,16 @@ public class JsonReaderTest {
         //given
         String jsonContent = "{\n" +
                 "  \"ok\": true,\n" +
-                "  \"access_token\": \"xoxp-190277444070-188905016561-189381155345-5122f1654f24dad34bdfd4d49f03b5ea\",\n" +
+                "  \"access_token\": \"TOKEN\",\n" +
                 "  \"scope\": \"identify,incoming-webhook\",\n" +
-                "  \"user_id\": \"U5JSM0GGH\",\n" +
+                "  \"user_id\": \"USERID\",\n" +
                 "  \"team_name\": \"robots\",\n" +
-                "  \"team_id\": \"T5L85D222\",\n" +
+                "  \"team_id\": \"TEAMID\",\n" +
                 "  \"incoming_webhook\": {\n" +
                 "    \"channel\": \"#random\",\n" +
-                "    \"channel_id\": \"C5KFB975J\",\n" +
-                "    \"configuration_url\": \"https://robotscorp.slack.com/services/B5M3PDDDG\",\n" +
-                "    \"url\": \"https://hooks.slack.com/services/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\"\n" +
+                "    \"channel_id\": \"CHANNELID\",\n" +
+                "    \"configuration_url\": \"CONFIG_URL\",\n" +
+                "    \"url\": \"URL\"\n" +
                 "  }\n" +
                 "}";
 
@@ -40,11 +40,11 @@ public class JsonReaderTest {
         Webhook webhook = jsonReader.createWebhook(jsonContent);
 
         //then
-        assertEquals("xoxp-190277444070-188905016561-189381155345-5122f1654f24dad34bdfd4d49f03b5ea", webhook.getAccessToken());
+        assertEquals("TOKEN", webhook.getAccessToken());
         assertEquals("#random", webhook.getChannel());
-        assertEquals("C5KFB975J", webhook.getChannelId());
-        assertEquals("https://robotscorp.slack.com/services/B5M3PDDDG", webhook.getConfigurationUrl());
-        assertEquals("https://hooks.slack.com/services/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", webhook.getUrl());
+        assertEquals("CHANNELID", webhook.getChannelId());
+        assertEquals("CONFIG_URL", webhook.getConfigurationUrl());
+        assertEquals("URL", webhook.getUrl());
     }
 
     @Test

@@ -9,6 +9,7 @@ import slacky.model.Message;
 import slacky.model.Webhook;
 import slacky.service.HttpUtils;
 import slacky.service.JsonReader;
+import slacky.service.TokenUrlProvider;
 import slacky.service.WebSocketClientEndpoint;
 
 import java.io.IOException;
@@ -26,12 +27,18 @@ public class Controller {
     private HttpUtils httpUtils;
     @Autowired
     private JsonReader jsonReader;
+    @Autowired
+    private TokenUrlProvider tokenUrlProvider;
 
-    @RequestMapping(value = "/authenticate", method = RequestMethod.POST, consumes = {"application/json"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Webhook> authenticate(@RequestBody String code) throws IOException {
-        String url = getTokenUrl(code.replace("\"", ""));
+    @RequestMapping(value = "/getWebhook", method = RequestMethod.POST,
+            consumes = {"application/json"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Webhook> getWebhook(@RequestBody String codeAndRedirectUri) throws IOException {
+        String code = jsonReader.getValueByKey("code", codeAndRedirectUri);
+        String redirectUri = jsonReader.getValueByKey("redirectUri", codeAndRedirectUri);
+        String url = tokenUrlProvider.getTokenUri(code, redirectUri);
         System.out.println(url);
         String response = httpUtils.doGet(url);
+
         if (response.isEmpty() || !Boolean.valueOf(jsonReader.getValueByKey("ok", response))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         } else {
@@ -41,16 +48,16 @@ public class Controller {
         }
     }
 
-    @RequestMapping(value = "/sendMessage", method = RequestMethod.POST, consumes = {"application/json"})
+    @RequestMapping(value = "/sendMessage", method = RequestMethod.POST)
     public ResponseEntity<Message> sendMessage(@RequestBody  Message message) throws IOException {
         String response = httpUtils.doPost(message.getWebHookUrl(), message.toString());
         System.out.println(response);
         return new ResponseEntity<>(message, OK);
     }
 
-    @RequestMapping(value = "/connectRealTime", method = RequestMethod.POST, consumes = {"application/json"})
-    public ResponseEntity<String> connectRealTime(@RequestBody String code) throws URISyntaxException, IOException {
-        String requestUrl = getRealTimeConnectionRequestUrl(code.replace("\"", ""));
+    /*@RequestMapping(value = "/connectRealTime/{code}/{redirectUri}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> connectRealTime() throws URISyntaxException, IOException {
+        String requestUrl = getRealTimeConnectionRequestUrl(code, redirectUri);
         String response = httpUtils.doGet(requestUrl);
         final WebSocketClientEndpoint clientEndpoint = new WebSocketClientEndpoint(new URI(jsonReader.getValueByKey("url", response)));
 
@@ -67,24 +74,14 @@ public class Controller {
         System.out.println("Message returned = " + messageReturned.toString());
 
         return new ResponseEntity<>(messageReturned.toString(), OK);
-    }
+    }*/
 
-    private String getTokenUrl(String code) {
-        String client_id = "190277444070.189567610469";
-        String client_secret = "31af6ac80e7fb7ac2ade99080f74e3b0";
-        String redirect_uri = "http://localhost:8080";
-
-        String url = "https://slack.com/api/oauth.access?" +
-                "&client_id=" + client_id + "&client_secret=" + client_secret + "&code=" + code + "&redirect_uri=" + redirect_uri;
-        return url;
-    }
-
-    private String getRealTimeConnectionRequestUrl(String code) throws IOException {
-        String url = getTokenUrl(code.replace("\"", ""));
-        System.out.println(url);
-        String token = jsonReader.getValueByKey("access_token", httpUtils.doGet(getTokenUrl(code)));
-
-        String realTimeConnectionUrl = "https://slack.com/api/rtm.connect?token=" + token;
-        return realTimeConnectionUrl;
-    }
+//    private String getRealTimeConnectionRequestUrl(String code, String redirectUri) throws IOException {
+//        String url = getTokenUrl(code.replace("\"", ""), redirectUri);
+//        System.out.println(url);
+//        String token = jsonReader.getValueByKey("access_token", httpUtils.doGet(getTokenUrl(code, redirectUri)));
+//
+//        String realTimeConnectionUrl = "https://slack.com/api/rtm.connect?token=" + token;
+//        return realTimeConnectionUrl;
+//    }
 }

@@ -1,3 +1,11 @@
 .top {
     margin-top: 20px;
 }
+
+.authorizationBtn {
+    display: none;
+}
+
+.options {
+    cursor: pointer;
+}
